@@ -212,7 +212,15 @@ export class ReactNativeModal extends React.Component<ModalProps, State> {
 
   componentWillUnmount() {
     if (this.backHandler) {
-      this.backHandler.remove();
+      // Fix: New RN versions (>=0.73) don't have .remove()
+      if (typeof this.backHandler.remove === 'function') {
+        this.backHandler.remove();
+      } else {
+        BackHandler.removeEventListener(
+          'hardwareBackPress',
+          this.onBackButtonPress,
+        );
+      }
       this.backHandler = null;
     }
 
@@ -733,7 +741,10 @@ export class ReactNativeModal extends React.Component<ModalProps, State> {
 
     const { testID, ...containerProps } = otherProps;
     const computedStyle = [
-      { margin: this.getDeviceWidth() * 0.05, transform: [{ translateY: 0 }] },
+      {
+        margin: this.getDeviceWidth() * 0.05,
+        transform: [{ translateY: 0 }],
+      },
       styles.content,
       style,
     ];
