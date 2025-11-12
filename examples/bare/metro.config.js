@@ -1,5 +1,7 @@
 const path = require('path');
-const {makeMetroConfig} = require('@rnx-kit/metro-config');
+const { makeMetroConfig } = require('@rnx-kit/metro-config');
+
+const moduleRoot = path.resolve(__dirname, '../..'); // your forked package root
 
 module.exports = makeMetroConfig({
   transformer: {
@@ -10,14 +12,23 @@ module.exports = makeMetroConfig({
       },
     }),
   },
+
   resolver: {
-    enableSymlinks: true,
+    // Required so Metro follows symlinks created by `yarn link` / `npm link`
+    unstable_enableSymlinks: true,
+    // Preserve symlinks for correct module resolution
+    unstable_enableSymlinksInResolve: true,
+
     extraNodeModules: {
-      'react-native-modal': path.resolve(__dirname, '../../dist/'),
+      // Map your package name to its *source* (not dist)
+      'react-native-modal': path.resolve(moduleRoot),
     },
   },
+
   watchFolders: [
-    path.join(__dirname, 'node_modules', 'react-native-modal'),
-    path.resolve(__dirname, '../..'),
+    // Watch the forked package root
+    moduleRoot,
+    // Also watch its node_modules if it has local deps
+    path.resolve(moduleRoot, 'node_modules'),
   ],
 });
